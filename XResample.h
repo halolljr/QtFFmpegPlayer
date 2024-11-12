@@ -25,7 +25,7 @@ public:
 	/// </summary>
 	/// <param name="indatas">重采样前的数据，AVFrame*</param>
 	/// <param name="outdatas">重采样后的数据，unsigned char*</param>
-	/// <returns>返回重采样后的数据大小</returns>
+	/// <returns> <0 if 失败;不然正常返回>0 </returns>
 	virtual int Resample(AVFrame* indatas, unsigned char* outdatas);
 
 	/// <summary>
@@ -35,10 +35,13 @@ public:
 private:
 	/*互斥锁*/
 	std::mutex Gmtx_;
+	
 	/*音频重采样器（不要写成SwsContext*）*/
 	SwrContext* swsCtx_ = nullptr;
+	
 	/*重采样后的格式*/
 	AVSampleFormat outFormat = AV_SAMPLE_FMT_S16;
+	
 	/*重采样后的格式的字节*/
 	bool isClsoe_ = false;
 };

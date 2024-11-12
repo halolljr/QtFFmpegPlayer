@@ -75,6 +75,9 @@ bool XDemux::Open(const char* url)
 		if (as->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
 			audioS = as;
 			audioStreamIndex_ = i;
+			sample_rate_ = as->codecpar->sample_rate;
+			av_channel_layout_copy(&ch_layout_, &as->codecpar->ch_layout);
+
 			std::cout << "============音频信息============" << std::endl;
 			std::cout << "codec_id : " << as->codecpar->codec_id << std::endl;
 			std::cout << "format : " << as->codecpar->format << std::endl;
@@ -90,6 +93,7 @@ bool XDemux::Open(const char* url)
 			videoStreamIndex_ = i;
 			width_ = as->codecpar->width;
 			height_ = as->codecpar->height;
+
 			std::cout << "============视频信息============" << std::endl;
 			std::cout << "codec_id : " << as->codecpar->codec_id << std::endl;
 			std::cout << "format : " << as->codecpar->format << std::endl;
@@ -129,7 +133,7 @@ AVPacket* XDemux::Read()
 	pkt->pts = pkt->pts * (1000 * r2d(ic_->streams[pkt->stream_index]->time_base));
 	/*dts转化为毫秒*/
 	pkt->dts = pkt->dts * (1000 * r2d(ic_->streams[pkt->stream_index]->time_base));
-	std::cout << "pkt->pts : " << pkt->pts << std::endl;
+	//std::cout << "pkt->pts : " << pkt->pts << std::endl;
 	return pkt;
 }
 
@@ -245,9 +249,6 @@ void XDemux::Clear()
 void XDemux::Close()
 {
 	std::lock_guard<std::mutex> lck(Gmtx_);
-	if (!ic_) {
-		return;
-	}
 	if (url_) {
 		av_free(url_);
 		url_ = nullptr;

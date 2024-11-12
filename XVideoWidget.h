@@ -1,7 +1,8 @@
 ﻿#pragma once
+#include <iostream>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
-#include <QOpenGLShaderProgram>
+#include <QGLShaderProgram>
 #include <QTimer>
 #include <mutex>
 extern "C" {
@@ -17,7 +18,7 @@ public:
 	~XVideoWidget();
 
 	/// <summary>
-	/// 初始化窗口宽高,不管成功与否都释放AVFrame*
+	/// 初始化窗口宽高
 	/// </summary>
 	/// <param name="width">yuv数据的宽</param>
 	/// <param name="height">yuv数据的高</param>
@@ -49,7 +50,7 @@ protected:
 private:
 	std::mutex Gmtx_;
 	/*shader程序*/
-	QOpenGLShaderProgram program;
+	QGLShaderProgram program;
 	/*shader中的yuv变量地址*/
 	GLuint unis[3] = { 0 };
 	/*openGL中的texture地址*/
@@ -57,7 +58,7 @@ private:
 	/*材质空间地址*/
 	unsigned char* datas[3] = { 0 };
 	/*yuv420P数据的宽高*/
-	int width = 3840;
-	int height = 2160;
+	int width_ = 0;
+	int height_ = 0;
 	/*FILE* fp;*/
 };

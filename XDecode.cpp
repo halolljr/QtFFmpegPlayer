@@ -99,7 +99,7 @@ AVFrame* XDecode::Recv()
 		av_frame_free(&frame);
 		return nullptr;
 	}
-	std::cout << "Frame-LineSize[0] : " << frame->linesize[0] << std::endl;
+	//std::cout << "Frame-LineSize[0] : " << frame->linesize[0] << std::endl;
 	return frame;
 }
 

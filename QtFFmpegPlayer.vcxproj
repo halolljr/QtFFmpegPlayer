@@ -101,10 +101,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="SDLRender.cpp" />
+    <ClCompile Include="XAudioPlay.cpp" />
+    <ClCompile Include="XAudioThread.cpp" />
     <ClCompile Include="XDecode.cpp" />
+    <ClCompile Include="XDemuexThread.cpp" />
     <ClCompile Include="XDemux.cpp" />
     <ClCompile Include="XResample.cpp" />
-    <ClCompile Include="XVideoWidget.cpp" />
+    <ClCompile Include="XVideoThread.cpp" />
     <QtRcc Include="QtFFmpegPlayer.qrc" />
     <QtUic Include="QtFFmpegPlayer.ui" />
     <QtMoc Include="QtFFmpegPlayer.h" />
@@ -112,10 +116,14 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SDLRender.h" />
+    <ClInclude Include="XAudioPlay.h" />
+    <ClInclude Include="XAudioThread.h" />
     <ClInclude Include="XDecode.h" />
+    <ClInclude Include="XDemuexThread.h" />
     <ClInclude Include="XDemux.h" />
     <ClInclude Include="XResample.h" />
-    <QtMoc Include="XVideoWidget.h" />
+    <ClInclude Include="XVideoThread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

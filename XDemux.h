@@ -27,7 +27,7 @@ public:
 	/// 打卡多媒体文件或者流媒体（rtmp、http、rtsp、ETC）
 	/// </summary>
 	/// <param name="url">打开源</param>
-	/// <returns></returns>
+	/// <returns>bool 成功与否</returns>
 	virtual bool Open(const char* url);
 
 	/// <summary>
@@ -53,7 +53,7 @@ public:
 	/// </summary>
 	/// <param name="pos">位置百分比</param>
 	/// <param name="pos">Seek的方案，默认是SEEK_AVSTREAM_DURATION</param>
-	/// <returns>bool</returns>
+	/// <returns>bool 成功与否</returns>
 	virtual bool Seek(double pos, SEEK_CHOICE choice = SEEK_AVSTREAM_DURATION);
 
 	/// <summary>
@@ -80,31 +80,48 @@ public:
 	void StringErr(const int& errnum);
 private:
 	/*C++11以后可以放在类内初始化*/
+
 	/*参数设置*/
+
 	std::mutex Gmtx_;
+	
 	/*管控错误信息的锁*/
 	std::mutex Emtx_;
+	
 	/*输入源(内部分配空间)*/
 	char* url_ = nullptr;
+	
 	/*输入源上下文*/
 	AVFormatContext* ic_ = nullptr;
 	AVDictionary* opts_ = nullptr;
+	
 	/*流序号*/
 	int videoStreamIndex_ = -1;
 	int audioStreamIndex_ = -1;
+	
 	/*AVStream序号*/
 	AVStream* videoS = nullptr;
 	AVStream* audioS = nullptr;
+	
 	/*解码器上下文（序号->解码器上下文）*/
 	std::unordered_map<int, AVCodecContext*> codec_map_;
 public:
 	/*解码后的yuv宽高用以openGL绘制*/
 	int width_ = 0;
 	int height_ = 0;
+	
+	/*采样率*/
+	int sample_rate_ = 44100;
+
+	/*声道布局*/
+	AVChannelLayout ch_layout_;
+
 	/*总时长(毫秒)*/
 	int64_t totalMs_ = 0;
+	
 	/*描述声道*/
 	char channel_human[1024];
+	
 	/*错误err*/
 	char err_[1024] = { 0 };
 	bool isClose = false;
