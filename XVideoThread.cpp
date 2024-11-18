@@ -1,88 +1,107 @@
 #include "XVideoThread.h"
 
-XVideoThread::XVideoThread():sdlRender_()
+XVideoThread::XVideoThread()
 {
 
 }
 
 XVideoThread::~XVideoThread()
 {
-	if (!is_Exit.load()) {
-		Exit();
-		wait();
+}
+
+bool XVideoThread::RepaintPts(AVPacket* pkt, long long seekPos)
+{
+	mtx_.lock();
+	bool ret = decode->Send(pkt);
+	if (!ret) {
+		mtx_.unlock();
+		/*表示解码结束*/
+		return true;
 	}
+	AVFrame* frame = decode->Recv();
+	if (!frame) {
+		mtx_.unlock();
+		return false;
+	}
+	if (decode->pts == seekPos) {
+		/*等于关键帧，需要显示出去*/
+		if (call) {
+			call->Repaint(frame);
+		}
+		mtx_.unlock();
+		return true;
+	}
+	av_frame_free(&frame);
+	mtx_.unlock();
+	return false;
 }
 
 void XVideoThread::run()
 {
-	while (!is_Exit.load()) {
+	while (!isExit) {
 		mtx_.lock();
-		if (pkt_list_.empty() || !decodec_) {
+		if (this->isPause) {
+			mtx_.unlock();
+			msleep(5);
+			continue;
+		}
+		// 视频快了，就需要等  , 没有音频不需要等待
+		if (synpts > 0 && synpts < decode->pts) {
 			mtx_.unlock();
 			msleep(1);
 			continue;
 		}
-		AVPacket* pkt = pkt_list_.front();
-		pkt_list_.pop_front();
-		if (!sdlRender_.video_decodec(decodec_->GetAVCodecContext(), pkt)) {
+		AVPacket* pkt = Pop();
+		bool ret = decode->Send(pkt);
+		if (!ret) {
 			mtx_.unlock();
 			msleep(1);
 			continue;
 		}
-		mtx_.unlock();
-	}
-	/*强制刷新剩余的视频缓冲*/
-	sdlRender_.video_decodec(decodec_->GetAVCodecContext(), nullptr);
-}
-
-bool XVideoThread::Open(AVCodecParameters* para)
-{
-	std::lock_guard<std::mutex> lck(mtx_);
-	if (!para) {
-		return false;
-	}
-	if (!decodec_) {
-		decodec_ = new XDecode();
-	}
-	if (!decodec_) {
-		return false;
-	}
-	else {
-		if (decodec_->Open(para)) {
-			is_Exit.store(false);
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-}
-
-bool XVideoThread::Push(AVPacket* pkt)
-{
-	if(!pkt) {
-		return false;
-	}
-	while (!is_Exit.load()) {
-		mtx_.lock();
-		if (pkt_list_.size() < MAX_LIST_SIZE) {
-			pkt_list_.push_back(pkt);
-			mtx_.unlock();
-			break;
+		while (!isExit) {
+			AVFrame* frame = decode->Recv();
+			if (!frame) {
+				break;
+			}
+			if (call) {
+				call->Repaint(frame);
+			}
 		}
 		mtx_.unlock();
-		msleep(1);
 	}
-	return true;
+	return;
 }
 
 void XVideoThread::Exit()
 {
-	std::lock_guard<std::mutex> lck(mtx_);
-	decodec_->Close();
-	sdlRender_.Close();
-	pkt_list_.clear();
-	is_Exit.store(true);
-	wait();
-	return;
+
 }
+
+bool XVideoThread::Open(AVCodecParameters* para,IVideoCall* call,int width,int height)
+{
+	if (!para) {
+		return false;
+	}
+	Clear();
+	mtx_.lock();
+	synpts = 0;
+	/*初始化显示窗口*/
+	this->call = call;
+	if (call) {
+		this->call->Init(width, height);
+	}
+	mtx_.unlock();
+	if (!decode->Open(para)) {
+		std::cerr << __FUNCTION__ << " : XDecode::Open() Failed..." << std::endl;
+		return false;
+	}
+	return true;
+}
+
+void XVideoThread::SetPause(bool isPause)
+{
+	mtx_.lock();
+	this->isPause = isPause;
+	mtx_.unlock();
+}
+

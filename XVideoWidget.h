@@ -3,13 +3,20 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QGLShaderProgram>
-#include <QTimer>
 #include <mutex>
+#include "IVideoCall.h"
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#pragma comment (lib, "avcodec.lib")
+#pragma comment (lib, "avdevice.lib")
+#pragma comment (lib, "avfilter.lib")
+#pragma comment (lib, "avformat.lib")
+//#pragma comment (lib, "avutil.lib")
+//#pragma comment (lib, "swresample.lib")
+//#pragma comment (lib, "swscale.lib")
 }
-class XVideoWidget  : public QOpenGLWidget, protected  QOpenGLFunctions
+class XVideoWidget  : public QOpenGLWidget, protected  QOpenGLFunctions, public IVideoCall
 {
 	Q_OBJECT
 
@@ -22,10 +29,10 @@ public:
 	/// </summary>
 	/// <param name="width">yuv数据的宽</param>
 	/// <param name="height">yuv数据的高</param>
-	void Init(int width, int height);
+	virtual void Init(int width, int height);
 
 	/// <summary>
-	/// 接受解码后的yuv数据
+	/// 接受解码后的yuv数据，并释放传入的AVFrame*
 	/// </summary>
 	/// <param name="frame">解码后的frame</param>
 	virtual void Repaint(AVFrame* frame);

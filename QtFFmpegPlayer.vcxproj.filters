@@ -52,9 +52,6 @@
     <ClCompile Include="XAudioPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SDLRender.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XAudioThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -62,6 +59,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XDemuexThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XVideoWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XDecodeThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XSlider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,9 +84,6 @@
     <ClInclude Include="XAudioPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SDLRender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XAudioThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,5 +93,19 @@
     <ClInclude Include="XDemuexThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IVideoCall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XDecodeThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="XVideoWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="XSlider.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

@@ -1,50 +1,45 @@
 #include "XAudioThread.h"
 
-XAudioThread::XAudioThread()
+XAudioThread::XAudioThread():resample_(new XResample())
 {
 }
 
 XAudioThread::~XAudioThread()
 {
-	if (!is_Exit.load()) {
-		Exit();
-		wait();
-	}
+	isExit = true;
+	wait();
 }
 
 void XAudioThread::run()
 {
-	/*重采样之后的存放数据*/
+	/*这里没有运行*/
 	unsigned char* pcm = new unsigned char[1024 * 1024 * 10];
-	while (!is_Exit.load()) {
+	while (!isExit) {
 		mtx_.lock();
-		if (pkt_list_.empty()||!decode_||!resample_) {
+		if (isPause_) {
 			mtx_.unlock();
-			msleep(1);
+			msleep(5);
 			continue;
 		}
-		/*取出头部地址的拷贝，删除原队列头部地址*/
-		AVPacket* pkt = pkt_list_.front();
-		pkt_list_.pop_front();
-		bool ret = decode_->Send(pkt);
+		AVPacket* pkt = Pop();
+		bool ret = decode->Send(pkt);
 		if (!ret) {
 			mtx_.unlock();
 			msleep(1);
 			continue;
 		}
-		/*一次send可能多次recv*/
-		while (!is_Exit.load()) {
-			AVFrame* frame = decode_->Recv();
-			if (!frame)
+		while (!isExit) {
+			AVFrame* frame = decode->Recv();
+			if (!frame) {
 				break;
-			/*重采样*/
+			}
+			pts_ = decode->pts - audioplayer_.GetYetNotMS();
 			int size = resample_->Resample(frame, pcm);
-			/*播放音频*/
-			while (!is_Exit.load()) {
-				if (size <= 0)
+			while (!isExit) {
+				if (size <= 0) {
 					break;
-				/*缓冲没有播完*/
-				if (audioplayer_.GetFree() < size) {
+				}
+				if (audioplayer_.GetFree() < size || isPause_) {
 					msleep(1);
 					continue;
 				}
@@ -55,61 +50,70 @@ void XAudioThread::run()
 		mtx_.unlock();
 	}
 	delete[] pcm;
+	return;
 }
 
-bool XAudioThread::Open(AVCodecParameters* para)
+bool XAudioThread::Open(AVCodecParameters* para,int sampleRate,int nb_channels)
 {
 	if (!para) {
 		return false;
 	}
+	Clear();
 	std::lock_guard<std::mutex> lck(mtx_);
-	if (!decode_) {
-		decode_ = new XDecode();
-	}
-	if (!resample_) {
-		resample_ = new XResample();
-	}
-	if (!decode_->Open(para)) {
-		std::cout << __FUNCTION__ << " : XDecode Open() Failed..." << std::endl;
+	pts_ = 0;
+	if (!resample_->Open(para,false)) {
+		std::cerr << __FUNCTION__ << " : XResample::Open() Failed..." << std::endl;
 		return false;
 	}
-	if (!resample_->Open(decode_->GetAVCodecContext())){
-		std::cout << __FUNCTION__ << " : XResample Open() Failed..." << std::endl;
-		return false;
-	}
-	if (!audioplayer_.Open(decode_->GetAVCodecContext()->sample_rate, decode_->GetAVCodecContext()->ch_layout.nb_channels) ){
-		std::cout << __FUNCTION__ << " : XAudioPlayer Open() Failed..." << std::endl;
-		return false;
-	}
-	is_Exit.store(false);
-	return true;
-}
+	if (!audioplayer_.Open(sampleRate,nb_channels)) {
+		
+		resample_->Close();
+		delete resample_;
+		resample_ = nullptr;
 
-bool XAudioThread::Push(AVPacket* pkt)
-{
-	if (!pkt) {
+		std::cerr << __FUNCTION__ << " : XAudioPlay::Open() Failed..." << std::endl;
 		return false;
 	}
-	while (!is_Exit.load()) {
-		mtx_.lock();
-		if (pkt_list_.size() < MAX_LIST_SIZE) {
-			pkt_list_.push_back(pkt);
-			mtx_.unlock();
-			break;
-		}
-		mtx_.unlock();
-		msleep(1);
+	if (!decode->Open(para)) {
+		
+		resample_->Close();
+		delete resample_;
+		resample_ = nullptr;
+
+		audioplayer_.Close();
+
+		std::cerr << __FUNCTION__ << " : XDecodeThread::Open() Failed..." << std::endl;
+		return false;
 	}
 	return true;
 }
 
-void XAudioThread::Exit()
+
+void XAudioThread::Clear()
 {
+	XDecodeThread::Clear();
+	mtx_.lock();
+	audioplayer_.Clear();
+	mtx_.unlock();
+}
+
+void XAudioThread::Close()
+{
+	XDecodeThread::Close();
 	std::lock_guard<std::mutex> lck(mtx_);
-	decode_->Close();
+	if (resample_) {
+		resample_->Close();
+		delete resample_;
+		resample_ = nullptr;
+	}
 	audioplayer_.Close();
-	resample_->Close();
-	pkt_list_.clear();
-	is_Exit.store(true);
-	wait();
+	isPause_ = false;
+	this->pts_ = 0;
 }
+
+void XAudioThread::SetPause(bool isPause)
+{
+	this->isPause_ = isPause;
+	audioplayer_.SetPause(isPause);
+}
+

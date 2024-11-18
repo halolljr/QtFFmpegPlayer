@@ -1,12 +1,12 @@
 ﻿#include "XResample.h"
-#pragma comment (lib, "avcodec.lib")
-#pragma comment (lib, "avdevice.lib")
-#pragma comment (lib, "avfilter.lib")
-#pragma comment (lib, "avformat.lib")
-#pragma comment (lib, "avutil.lib")
-#pragma comment (lib, "swresample.lib")
-#pragma comment (lib, "swscale.lib")
 
+#pragma comment (lib, "avcodec.lib")
+//#pragma comment (lib, "avdevice.lib")
+//#pragma comment (lib, "avfilter.lib")
+#pragma comment (lib, "avformat.lib")
+//#pragma comment (lib, "avutil.lib")
+#pragma comment (lib, "swresample.lib")
+//#pragma comment (lib, "swscale.lib")
 XResample::XResample()
 {
 
@@ -14,19 +14,17 @@ XResample::XResample()
 
 XResample::~XResample()
 {
-	if (!isClsoe_)
-		Close();
-	isClsoe_ = false;
+
 }
 
-bool XResample::Open(const AVCodecContext* para)
+bool XResample::Open(AVCodecParameters* para,bool isClearPara)
 {
 	if (!para) {
 		return false;
 	}
+	Close();
 	/*上锁*/
 	std::lock_guard<std::mutex> lck(Gmtx_);
-
 	if (!swsCtx_) {
 		AVChannelLayout in_ch_layout, out_ch_layout;
 		av_channel_layout_copy(&in_ch_layout, &para->ch_layout);
@@ -37,9 +35,12 @@ bool XResample::Open(const AVCodecContext* para)
 			outFormat, /*转换后的采样格式===默认AV_SAMPLE_FMT_S16*/
 			para->sample_rate,	/*转换后的采样率*/
 			&in_ch_layout,	/*输入的声道布局*/
-			para->sample_fmt, /*输入的采样格式=====可能有问题*/
+			(AVSampleFormat)para->format, /*输入的采样格式=====可能有问题*/
 			para->sample_rate, /*输入的采样率*/
 			0, 0);
+		if (isClearPara) {
+			avcodec_parameters_free(&para);
+		}
 		if (ret < 0) {  // 错误检查，确保返回的错误为负数（FFmpeg 的错误码）
 			char errbuff[1024];
 			av_strerror(ret, errbuff, sizeof(errbuff));
@@ -60,17 +61,17 @@ bool XResample::Open(const AVCodecContext* para)
 int XResample::Resample(AVFrame* indatas, unsigned char* outdatas)
 {
 	if (!indatas) {
-		return -1;
+		return 0;
 	}
 	if (!outdatas) {
 		av_frame_free(&indatas);
-		return -1;
+		return 0;
 	}
 	/*指针数组*/
 	uint8_t* data[2] = { 0 };
 	data[0] = outdatas;
 	int ret = swr_convert(swsCtx_,
-		data,indatas->nb_samples + 512 ,	/*输出==+512是为了保证缓冲*/
+		data,indatas->nb_samples ,	/*输出==*/
 		(const uint8_t**)indatas->data,indatas->nb_samples	/*输入*/
 		);
 	if (ret < 0) {
@@ -88,6 +89,7 @@ void XResample::Close()
 	std::lock_guard<std::mutex> lck(Gmtx_);
 	if (swsCtx_) {
 		swr_free(&swsCtx_);
+		swsCtx_ = nullptr;
 	}
-	isClsoe_ = true;
+	return;
 }

@@ -12,7 +12,7 @@ public:
 	virtual~XDecode();
 public:
 	/// <summary>
-	/// 打开解码器并释放AVCodecParameters*的空间（不管成功与否）
+	/// 打开解码器并释放AVCodecParameters*的空间（不管成功与否）{每一次Open都会释放上一次的资源}
 	/// </summary>
 	/// <param name="para">参数AVCodecParameters*,不管成功与否都要释放AVCodecParameters空间</param>
 	/// <returns>bool 解码器是否打开成功</returns>
@@ -56,7 +56,11 @@ private:
 	
 	/*解码器上下文*/
 	AVCodecContext* ctx_ = nullptr;
-	
-	bool isClose = false;
+
+public:
+	/*当前解码到的pts*/
+	long long pts = 0;
+
+	std::atomic<bool> isAudio{ false };
 };
 

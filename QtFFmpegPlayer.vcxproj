@@ -70,6 +70,8 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\Alearn\ACPP\store\YSP\FFmpeg-Learn\Exer_Code\QtFFmpegPlayer\lib\SDL2;D:\Alearn\ACPP\store\YSP\FFmpeg-Learn\Exer_Code\QtFFmpegPlayer\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -101,14 +103,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SDLRender.cpp" />
     <ClCompile Include="XAudioPlay.cpp" />
     <ClCompile Include="XAudioThread.cpp" />
     <ClCompile Include="XDecode.cpp" />
+    <ClCompile Include="XDecodeThread.cpp" />
     <ClCompile Include="XDemuexThread.cpp" />
     <ClCompile Include="XDemux.cpp" />
     <ClCompile Include="XResample.cpp" />
+    <ClCompile Include="XSlider.cpp" />
     <ClCompile Include="XVideoThread.cpp" />
+    <ClCompile Include="XVideoWidget.cpp" />
     <QtRcc Include="QtFFmpegPlayer.qrc" />
     <QtUic Include="QtFFmpegPlayer.ui" />
     <QtMoc Include="QtFFmpegPlayer.h" />
@@ -116,14 +120,17 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SDLRender.h" />
+    <ClInclude Include="IVideoCall.h" />
     <ClInclude Include="XAudioPlay.h" />
     <ClInclude Include="XAudioThread.h" />
     <ClInclude Include="XDecode.h" />
+    <ClInclude Include="XDecodeThread.h" />
     <ClInclude Include="XDemuexThread.h" />
     <ClInclude Include="XDemux.h" />
     <ClInclude Include="XResample.h" />
+    <QtMoc Include="XSlider.h" />
     <ClInclude Include="XVideoThread.h" />
+    <QtMoc Include="XVideoWidget.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

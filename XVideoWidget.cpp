@@ -1,11 +1,4 @@
 ﻿#include "XVideoWidget.h"
-#pragma comment (lib, "avcodec.lib")
-#pragma comment (lib, "avdevice.lib")
-#pragma comment (lib, "avfilter.lib")
-#pragma comment (lib, "avformat.lib")
-#pragma comment (lib, "avutil.lib")
-#pragma comment (lib, "swresample.lib")
-#pragma comment (lib, "swscale.lib")
 /*自动加双引号*/
 #define GET_STR(x) #x
 #define A_VER 3
@@ -46,15 +39,15 @@ XVideoWidget::XVideoWidget(QWidget *parent)
 XVideoWidget::~XVideoWidget()
 {
 	if (datas[0]) {
-		delete datas[0];
+		delete[] datas[0];
 		datas[0] = nullptr;
 	}
 	if (datas[1]) {
-		delete datas[1];
+		delete[] datas[1];
 		datas[1] = nullptr;
 	}
 	if (datas[2]) {
-		delete datas[2];
+		delete[] datas[2];
 		datas[2] = nullptr;
 	}
 	if (texs[0]) {
@@ -62,7 +55,7 @@ XVideoWidget::~XVideoWidget()
 	};
 	width_ = 0;
 	height_ = 0;
-	std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
+	//std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
 }
 
 void XVideoWidget::Init(int width, int height)
@@ -70,9 +63,11 @@ void XVideoWidget::Init(int width, int height)
 	std::lock_guard<std::mutex> lck(Gmtx_);
 	this->width_ = width;
 	this->height_ = height;
-	delete datas[0];
-	delete datas[1];
-	delete datas[2];
+	if (datas[0]) {
+		delete[] datas[0];
+		delete[] datas[1];
+		delete[] datas[2];
+	}
 	/*分配材质内存空间*/
 	datas[0] = new unsigned char[width * height];	//Y
 	datas[1] = new unsigned char[width * height / 4];	//U
@@ -80,7 +75,7 @@ void XVideoWidget::Init(int width, int height)
 
 	if (texs[0]) {
 		glDeleteTextures(3, texs);
-		texs[0] = texs[1] = texs[2] = 0;  // 确保纹理ID被重置
+		//texs[0] = texs[1] = texs[2] = 0;  // 确保纹理ID被重置
 	}
 	
 	//创建材质
@@ -109,7 +104,7 @@ void XVideoWidget::Init(int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//创建材质显卡空间
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width / 2, height / 2, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
-	std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
+	//std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
 	return;
 }
 
@@ -125,13 +120,29 @@ void XVideoWidget::Repaint(AVFrame* frame)
 		return;
 	}
 
-	memcpy(datas[0], frame->data[0], width_ * height_);
+	/*memcpy(datas[0], frame->data[0], width_ * height_);
 	memcpy(datas[1], frame->data[1], width_ * height_ / 4);
-	memcpy(datas[2], frame->data[2], width_ * height_ / 4);
-	/*行对齐问题*/
+	memcpy(datas[2], frame->data[2], width_ * height_ / 4);*/
+	if (width_ == frame->linesize[0]) // 无需对齐
+	{
+		memcpy(datas[0], frame->data[0], width_ * height_);
+		memcpy(datas[1], frame->data[1], width_ * height_ / 4);
+		memcpy(datas[2], frame->data[2], width_ * height_ / 4);
+	}
+	else // 行对齐问题
+	{
+		for (int i = 0; i < height_; i++) // Y 
+			memcpy(datas[0] + width_ * i, frame->data[0] + frame->linesize[0] * i, width_);
+		for (int i = 0; i < height_ / 2; i++) // U
+			memcpy(datas[1] + width_ / 2 * i, frame->data[1] + frame->linesize[1] * i, width_);
+		for (int i = 0; i < height_ / 2; i++) // V
+			memcpy(datas[2] + width_ / 2 * i, frame->data[2] + frame->linesize[2] * i, width_);
+	}
 	Gmtx_.unlock();
-	std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
+	av_frame_free(&frame);
+	//std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
 	update();
+	return;
 }
 
 void XVideoWidget::paintGL()
@@ -161,7 +172,7 @@ void XVideoWidget::paintGL()
 	glUniform1i(unis[2], 2);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
+	//std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
 	return;
 }
 
@@ -215,13 +226,13 @@ void XVideoWidget::initializeGL()
 	unis[0] = program.uniformLocation("tex_y");
 	unis[1] = program.uniformLocation("tex_u");
 	unis[2] = program.uniformLocation("tex_v");
-	std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
+	//std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
 	return;
 }
 
 void XVideoWidget::resizeGL(int width, int height)
 {
 	std::lock_guard<std::mutex> lck(Gmtx_);
-	std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
+	//std::cout << __FUNCTION__ << " : succeed...======================" << std::endl;
 	return;
 }

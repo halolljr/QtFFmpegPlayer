@@ -19,7 +19,7 @@ public:
 	static XAudioPlay& instance();
 
 	/// <summary>
-	/// 初始化播放参数并打开播放器
+	/// 初始化播放参数并打开播放器(每一次打开之前都会关闭之前拥有的资源)
 	/// </summary>
 	/// <param name="sample_rate">采样率</param>
 	/// <param name="nb_channels">通道个数</param>
@@ -27,9 +27,20 @@ public:
 	virtual bool Open(int sample_rate,int nb_channels) = 0;
 
 	/// <summary>
+	/// 设置暂停还是播放
+	/// </summary>
+	/// <param name="isPause">暂停或者播放</param>
+	virtual void SetPause(bool isPause) = 0;
+
+	/// <summary>
 	/// 关闭播放器并释放参数
 	/// </summary>
 	virtual void Close() = 0;
+
+	/// <summary>
+	/// 清理缓冲
+	/// </summary>
+	virtual void Clear() = 0;
 
 	/// <summary>
 	/// 写数据到Qt音频播放器（有空间才写）
@@ -44,6 +55,12 @@ public:
 	/// </summary>
 	/// <returns>剩余空间大小</returns>
 	virtual int GetFree() = 0;
+
+	/// <summary>
+	/// 返回当前未播放的缓冲区的音频的毫秒
+	/// </summary>
+	/// <returns>long long</returns>
+	virtual long long GetYetNotMS() = 0;
 public:
 	virtual ~XAudioPlay();
 	XAudioPlay(const XAudioPlay& other) = delete;
@@ -60,15 +77,22 @@ protected:
 	XAudioPlay();
 };
 
-class QtPlayer : public XAudioPlay {
+class QtAudioPlayer : public XAudioPlay {
+public:
+	QtAudioPlayer();
+	virtual ~QtAudioPlayer();
 public:
 	virtual bool Open(int sample_rate,int nb_channles);
+	virtual void SetPause(bool isPause);
 	virtual void Close();
+	virtual void Clear();
 	virtual bool Write(const unsigned char* data, int datasize);
 	virtual int GetFree();
+	virtual long long GetYetNotMS();
 public:
 	QAudioOutput* outPut_ = nullptr;
 	QIODevice* io_ = nullptr;
 	std::mutex Gmtx_;
+	bool is_Close = false;
 };
 

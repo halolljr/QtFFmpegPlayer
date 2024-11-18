@@ -6,7 +6,6 @@
 #pragma comment (lib, "avutil.lib")
 #pragma comment (lib, "swresample.lib")
 #pragma comment (lib, "swscale.lib")
-
 static int THREAD_COUNT = 8;
 XDecode::XDecode()
 {
@@ -15,9 +14,6 @@ XDecode::XDecode()
 
 XDecode::~XDecode()
 {
-	if(!isClose)
-		Close();
-	isClose = false;
 }
 
 bool XDecode::Open(AVCodecParameters* para)
@@ -67,16 +63,17 @@ bool XDecode::Send(AVPacket* pkt)
 	/*颗粒度更小*/
 	Gmtx_.lock();
 	if (!ctx_) {
-		av_packet_free(&pkt);
+		//av_packet_free(&pkt);
 		Gmtx_.unlock();
 		return false;
 	}
 	int ret = avcodec_send_packet(ctx_, pkt);
-	Gmtx_.unlock();
 	av_packet_free(&pkt);
 	if (ret != 0) {
+		Gmtx_.unlock();
 		return false;
 	}
+	Gmtx_.unlock();
 	return true;
 }
 
@@ -94,12 +91,14 @@ AVFrame* XDecode::Recv()
 		return nullptr;
 	}
 	int ret = avcodec_receive_frame(ctx_, frame);
-	Gmtx_.unlock();
 	if (ret != 0) {
 		av_frame_free(&frame);
+		Gmtx_.unlock();
 		return nullptr;
 	}
 	//std::cout << "Frame-LineSize[0] : " << frame->linesize[0] << std::endl;
+	pts = frame->pts;
+	Gmtx_.unlock();
 	return frame;
 }
 
@@ -118,6 +117,6 @@ void XDecode::Close()
 	if (ctx_) {
 		avcodec_free_context(&ctx_);
 	}
-	isClose = true;
+	pts = 0;
 	return;
 }

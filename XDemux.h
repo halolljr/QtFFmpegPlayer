@@ -37,6 +37,12 @@ public:
 	virtual AVPacket* Read();
 
 	/// <summary>
+	/// 只读视频呢，丢弃音频，空间释放
+	/// </summary>
+	/// <returns>需要外部释放的AVPacket*</returns>
+	virtual AVPacket* ReadVideo();
+
+	/// <summary>
 	///  获取视频参数，内部分配了空间，外部需要avocdec_parameters_free()来清理
 	/// </summary>
 	/// <returns>返回AVCodecParameters*，，外部需要avocdec_parameters_free()</returns>
@@ -72,21 +78,12 @@ public:
 	/// <param name="pkt">av_read_frame读取到的AVPacket*</param>
 	/// <returns>是否 bool</returns>
 	bool IsAudio(AVPacket* pkt);
-
-	/// <summary>
-	/// 将FFmpeg返回的错误码转化为错误信息
-	/// </summary>
-	/// <param name="errnum">错误码</param>
-	void StringErr(const int& errnum);
 private:
 	/*C++11以后可以放在类内初始化*/
 
 	/*参数设置*/
-
+	/*通用锁*/
 	std::mutex Gmtx_;
-	
-	/*管控错误信息的锁*/
-	std::mutex Emtx_;
 	
 	/*输入源(内部分配空间)*/
 	char* url_ = nullptr;
@@ -103,8 +100,6 @@ private:
 	AVStream* videoS = nullptr;
 	AVStream* audioS = nullptr;
 	
-	/*解码器上下文（序号->解码器上下文）*/
-	std::unordered_map<int, AVCodecContext*> codec_map_;
 public:
 	/*解码后的yuv宽高用以openGL绘制*/
 	int width_ = 0;
@@ -120,10 +115,7 @@ public:
 	int64_t totalMs_ = 0;
 	
 	/*描述声道*/
-	char channel_human[1024];
-	
-	/*错误err*/
-	char err_[1024] = { 0 };
-	bool isClose = false;
+	char channel_human[1024] = { 0 };
+
 };
 

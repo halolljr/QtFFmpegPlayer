@@ -18,7 +18,7 @@ public:
 	/// </summary>
 	/// <param name="para">AVCodecContext*</param>
 	/// <returns>bool值，成功与否</returns>
-	virtual bool Open(const AVCodecContext* para);
+	virtual bool Open(AVCodecParameters* para,bool isClearPara);
 
 	/// <summary>
 	/// 音频重采样,不管成功与否都释放AVFrame*
@@ -42,7 +42,5 @@ private:
 	/*重采样后的格式*/
 	AVSampleFormat outFormat = AV_SAMPLE_FMT_S16;
 	
-	/*重采样后的格式的字节*/
-	bool isClsoe_ = false;
 };
 
