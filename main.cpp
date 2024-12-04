@@ -1,13 +1,29 @@
-ï»¿#include "QtFFmpegPlayer.h"
-#include <windows.h>
+#include "Player.h"
+#include <QApplication>
+#include <QFontDatabase>
+#include <QDebug>
 #include <QtWidgets/QApplication>
-
+extern "C" {
+#pragma comment (lib, "avcodec.lib")
+#pragma comment (lib, "avdevice.lib")
+#pragma comment (lib, "avfilter.lib")
+#pragma comment (lib, "avformat.lib")
+#pragma comment (lib, "avutil.lib")
+#pragma comment (lib, "swresample.lib")
+#pragma comment (lib, "swscale.lib")
+#include <libavutil/avutil.h>
+}
 int main(int argc, char *argv[])
 {
-
     QApplication a(argc, argv);
-    QtFFmpegPlayer w;
+	//Ê¹ÓÃµÚÈý·½×Ö¿â£¬ÓÃÀ´×÷ÎªUIÍ¼Æ¬ ://res/fa-solid-900.ttf
+	QFontDatabase::addApplicationFont(":/Player/res/fa-solid-900.ttf");
+	//QFontDatabase::addApplicationFont("://res/fa-solid-900.ttf");
+    Player w;
+	if (w.Init() == false)
+	{
+		return -1;
+	}
     w.show();
     return a.exec();
 }
-
