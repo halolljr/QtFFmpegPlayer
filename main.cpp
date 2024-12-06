@@ -16,9 +16,9 @@ extern "C" {
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-	//使用第三方字库，用来作为UI图片 ://res/fa-solid-900.ttf
-	QFontDatabase::addApplicationFont(":/Player/res/fa-solid-900.ttf");
-	//QFontDatabase::addApplicationFont("://res/fa-solid-900.ttf");
+	//使用第三方字库，用来作为UI图片
+	QFontDatabase::addApplicationFont(":/Player/res/fontawesome-webfont.ttf");
+	//QFontDatabase::addApplicationFont(":/Player/res/fa-solid-900.ttf");
     Player w;
 	if (w.Init() == false)
 	{

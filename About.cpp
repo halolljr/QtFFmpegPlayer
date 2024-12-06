@@ -20,8 +20,8 @@ bool About::Init()
 	//this->setWindowFlags(Qt::Dialog);
 	//setWindowFlags(Qt::FramelessWindowHint /*| Qt::WindowSystemMenuHint*/ | Qt::WindowMinimizeButtonHint);
 
-	this->setWindowIcon(QIcon("://res/player.png"));
-	ui->LogoLabel->setPixmap(QPixmap("://res/player.png").scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+	this->setWindowIcon(QIcon(":/Player/res/player.png"));
+	ui->LogoLabel->setPixmap(QPixmap(":/Player/res/player.png").scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
 	//setStyleSheet(GlobalHelper::GetQssStr("://res/qss/about.css"));
 

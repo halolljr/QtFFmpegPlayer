@@ -27,7 +27,10 @@ public:
     explicit Player(QMainWindow* parent = 0);
     ~Player();
 
-    //初始化
+    /// <summary>
+    /// 初始化界面并加载自定义组件
+    /// </summary>
+    /// <returns>bool 成功与否</returns>
     bool Init();
 protected:
     //绘制
@@ -55,7 +58,10 @@ protected:
 
 
 private:
-    //连接信号槽
+    /// <summary>
+    /// 连接信号和槽
+    /// </summary>
+    /// <returns>bool 成功与否</returns>
     bool ConnectSignalSlots();
 
     //关闭、最小化、最大化按钮响应
@@ -114,8 +120,10 @@ private:
 	QTimer m_stFullscreenMouseDetectTimer;//全屏时鼠标位置监测时钟
 	bool m_bFullscreenCtrlBarShow;
 	QTimer stCtrlBarHideTimer;
-
+    
+    /*自定义播放列表*/
 	Playlist m_stPlaylist;
+    /*自定义标题栏*/
 	Title m_stTitle;
 
 	bool m_bMoveDrag;//移动窗口标志

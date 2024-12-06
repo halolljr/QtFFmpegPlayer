@@ -32,9 +32,9 @@ Player::Player(QMainWindow *parent)
 	//无边框、无系统菜单、 任务栏点击最小化
 	//setWindowFlags(Qt::FramelessWindowHint /*| Qt::WindowSystemMenuHint*/ | Qt::WindowMinimizeButtonHint);
 	 //设置任务栏图标
-	this->setWindowIcon(QIcon("://res/player.png"));
+	this->setWindowIcon(QIcon(":/Player/res/player.png"));
 	//加载样式
-	QString qss = GlobalHelper::GetQssStr("://res/qss/mainwid.css");
+	QString qss = GlobalHelper::GetQssStr(":/Player/res/qss/mainwid.css");
 	setStyleSheet(qss);
 
 	// 追踪鼠标 用于播放时隐藏鼠标
@@ -77,29 +77,37 @@ Player::~Player()
 bool Player::Init()
 {
 	QWidget* em = new QWidget(this);
+	/*右侧播放列表*/
+	/*设置QDockWidget的标题栏为em*/
 	ui->PlaylistWid->setTitleBarWidget(em);
+	/*设置QDockWidget的内容为m_stPlaylist*/
 	ui->PlaylistWid->setWidget(&m_stPlaylist);
 	//ui->PlaylistWid->setFixedWidth(100);
 
 	QWidget* emTitle = new QWidget(this);
+	/*上方标题栏*/
+	/*设置QDockWidget的标题栏为emTitle*/
 	ui->TitleWid->setTitleBarWidget(emTitle);
+	/*设置QDockWidget的内容为m_stTitle*/
 	ui->TitleWid->setWidget(&m_stTitle);
 
-
-	//     FramelessHelper *pHelper = new FramelessHelper(this); //无边框管理
-	//     pHelper->activateOn(this);  //激活当前窗体
-	//     pHelper->setTitleHeight(ui->TitleWid->height());  //设置窗体的标题栏高度
-	//     pHelper->setWidgetMovable(true);  //设置窗体可移动
-	//     pHelper->setWidgetResizable(true);  //设置窗体可缩放
-	//     pHelper->setRubberBandOnMove(true);  //设置橡皮筋效果-可移动
-	//     pHelper->setRubberBandOnResize(true);  //设置橡皮筋效果-可缩放
+	//FramelessHelper *pHelper = new FramelessHelper(this); //无边框管理
+	//pHelper->activateOn(this);  //激活当前窗体
+	//pHelper->setTitleHeight(ui->TitleWid->height());  //设置窗体的标题栏高度
+	//pHelper->setWidgetMovable(true);  //设置窗体可移动
+	//pHelper->setWidgetResizable(true);  //设置窗体可缩放
+	//pHelper->setRubberBandOnMove(true);  //设置橡皮筋效果-可移动
+	//pHelper->setRubberBandOnResize(true);  //设置橡皮筋效果-可缩放
 
 	//连接自定义信号与槽
 	if (ConnectSignalSlots() == false)
 	{
 		return false;
 	}
-
+	/*
+		CtrlBarWid：播放控制（类提升）
+		ShowWid：播放界面（类提升）
+	*/
 	if (ui->CtrlBarWid->Init() == false ||
 		m_stPlaylist.Init() == false ||
 		ui->ShowWid->Init() == false ||
@@ -107,7 +115,6 @@ bool Player::Init()
 	{
 		return false;
 	}
-
 
 	m_stCtrlbarAnimationShow = new QPropertyAnimation(ui->CtrlBarWid, "geometry");
 	m_stCtrlbarAnimationHide = new QPropertyAnimation(ui->CtrlBarWid, "geometry");
@@ -121,7 +128,6 @@ bool Player::Init()
 	m_stActFullscreen.setCheckable(true);
 	m_stMenu.addAction(&m_stActFullscreen);
 
-
 	m_stActOpen.setText("打开");
 	m_stMenu.addAction(&m_stActOpen);
 
@@ -130,8 +136,6 @@ bool Player::Init()
 
 	m_stActExit.setText("退出");
 	m_stMenu.addAction(&m_stActExit);
-
-
 
 	return true;
 }
@@ -156,7 +160,6 @@ void  Player::leaveEvent(QEvent* event)
 
 bool  Player::ConnectSignalSlots()
 {
-	//连接信号与槽
 	connect(&m_stTitle, &Title::SigCloseBtnClicked, this, &Player::OnCloseBtnClicked);
 	connect(&m_stTitle, &Title::SigMaxBtnClicked, this, &Player::OnMaxBtnClicked);
 	connect(&m_stTitle, &Title::SigMinBtnClicked, this, &Player::OnMinBtnClicked);
@@ -164,7 +167,6 @@ bool  Player::ConnectSignalSlots()
 	connect(&m_stTitle, &Title::SigFullScreenBtnClicked, this, &Player::OnFullScreenPlay);
 	connect(&m_stTitle, &Title::SigOpenFile, &m_stPlaylist, &Playlist::OnAddFileAndPlay);
 	connect(&m_stTitle, &Title::SigShowMenu, this, &Player::OnShowMenu);
-
 
 	connect(&m_stPlaylist, &Playlist::SigPlay, ui->ShowWid, &Show::SigPlay);
 
@@ -211,13 +213,10 @@ bool  Player::ConnectSignalSlots()
 
 	connect(&m_stFullscreenMouseDetectTimer, &QTimer::timeout, this, &Player::OnFullscreenMouseDetectTimeOut);
 
-
 	connect(&m_stActAbout, &QAction::triggered, this, &Player::OnShowAbout);
 	connect(&m_stActFullscreen, &QAction::triggered, this, &Player::OnFullScreenPlay);
 	connect(&m_stActExit, &QAction::triggered, this, &Player::OnCloseBtnClicked);
 	connect(&m_stActOpen, &QAction::triggered, this, &Player::OpenFile);
-
-
 
 	return true;
 }

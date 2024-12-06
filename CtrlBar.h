@@ -15,14 +15,11 @@ class CtrlBar : public QWidget
 public:
     explicit CtrlBar(QWidget* parent = 0);
     ~CtrlBar();
-    /**
-         * @brief	初始化UI
-         *
-         * @return	true 成功 false 失败
-         * @note
-         */
+    /// <summary>
+    /// 初始化UI界面
+    /// </summary>
+    /// <returns>bool 成功与否</returns>
     bool Init();
-
 public:
     void OnVideoTotalSeconds(int nSeconds);
     void OnVideoPlaySeconds(int nSeconds);
@@ -38,14 +35,10 @@ private slots:
     void on_VolumeBtn_clicked();
     void on_StopBtn_clicked();
     void on_SettingBtn_clicked();
-
-    /**
-    * @brief	连接信号槽
-    *
-    * @param
-    * @return
-    * @note
-    */
+    /// <summary>
+    /// 连接信号和槽函数
+    /// </summary>
+    /// <returns>bool 成功与否</returns>
     bool ConnectSignalSlots();
     void on_speedBtn_clicked();
 

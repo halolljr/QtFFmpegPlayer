@@ -18,7 +18,7 @@ CtrlBar::~CtrlBar()
 
 bool CtrlBar::Init()
 {
-	setStyleSheet(GlobalHelper::GetQssStr("://res/qss/ctrlbar.css"));
+	setStyleSheet(GlobalHelper::GetQssStr(":/Player/res/qss/ctrlbar.css"));
 
 	GlobalHelper::SetIcon(ui->PlayOrPauseBtn, 12, QChar(0xf04b));
 	GlobalHelper::SetIcon(ui->StopBtn, 12, QChar(0xf04d));
@@ -27,9 +27,7 @@ bool CtrlBar::Init()
 	GlobalHelper::SetIcon(ui->ForwardBtn, 12, QChar(0xf051));
 	GlobalHelper::SetIcon(ui->BackwardBtn, 12, QChar(0xf048));
 	GlobalHelper::SetIcon(ui->SettingBtn, 12, QChar(0xf013));
-
-
-	//    GlobalHelper::SetIcon(ui->speedBtn, 12, QChar(0xf013));
+	GlobalHelper::SetIcon(ui->speedBtn, 12, QChar(0xf013));
 	ui->PlaylistCtrlBtn->setToolTip("播放列表");
 	ui->SettingBtn->setToolTip("设置");
 	ui->VolumeBtn->setToolTip("静音");
@@ -38,6 +36,7 @@ bool CtrlBar::Init()
 	ui->StopBtn->setToolTip("停止");
 	ui->PlayOrPauseBtn->setToolTip("播放");
 	ui->speedBtn->setToolTip("倍速");
+
 	ConnectSignalSlots();
 
 	double dPercent = -1.0;
@@ -49,21 +48,17 @@ bool CtrlBar::Init()
 	}
 
 	return true;
-
 }
 
 bool CtrlBar::ConnectSignalSlots()
 {
 	QList<bool> listRet;
 	bool bRet;
-
-
 	connect(ui->PlaylistCtrlBtn, &QPushButton::clicked, this, &CtrlBar::SigShowOrHidePlaylist);
 	connect(ui->PlaySlider, &CustomSlider::SigCustomSliderValueChanged, this, &CtrlBar::OnPlaySliderValueChanged);
 	connect(ui->VolumeSlider, &CustomSlider::SigCustomSliderValueChanged, this, &CtrlBar::OnVolumeSliderValueChanged);
 	connect(ui->BackwardBtn, &QPushButton::clicked, this, &CtrlBar::SigBackwardPlay);
 	connect(ui->ForwardBtn, &QPushButton::clicked, this, &CtrlBar::SigForwardPlay);
-
 	return true;
 }
 
